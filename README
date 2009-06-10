@@ -1,0 +1,64 @@
+= ackack
+
+http://www.github.com/mccraigmccraig/ackack
+
+== DESCRIPTION:
+
+an integration of ack [ http://code.google.com/p/ack/ ] into emacs + ecb
+
+== FEATURES:
+
+- use ack from emacs to search file hierarchies
+- sensitive to ecb source paths to search current project
+- results are clickable
+
+== PROBLEMS:
+
+- none
+
+== SYNOPSIS:
+
+M-x ack   : ack for a pattern from the top level of the enclosing ecb source path
+M-x ack1  : ack for a pattern from one level down towards the current file from the enclosing ecb source path
+M-x ack2  : ack for a pattern from two levels down towards the current file from the enclosin ecb source path
+
+== REQUIREMENTS:
+
+Emacs
+
+== INSTALL:
+
+;; add to your .emacs
+(setq load-path (append '("~/path/to/ackack") load-path))
+(require 'ackack)
+
+== LICENSE:
+
+(The BSD License)
+
+Copyright (c) 2009, mccraigmccraig
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+  * Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+  * Neither the name of the <ORGANIZATION> nor the names of its contributors may
+    be used to endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
