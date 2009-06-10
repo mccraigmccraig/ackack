@@ -95,7 +95,7 @@
       (set-buffer ackack-results)
       (erase-buffer)
       (insert (format "%s %s %S\n\n" ackack-ack pattern paths))
-      (setq linkify-regexps '("^\\(.*\\):\\([0-9]*\\):")))
+      (setq linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):")))
     
     (setq proc (apply #'start-process "ackack" ackack-results ackack-ack "--nofilter" pattern paths))
     (set-process-filter proc 'linkify-filter)
