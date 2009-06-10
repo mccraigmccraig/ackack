@@ -12,30 +12,35 @@
 
 ;; split a path into it's components
 (defun ackack-split-path ( path )
-  (let ((components ())
-	(parent (ackack-parent-path path)))
-    (while (not (equal path parent))
-      (setq components (cons (file-name-nondirectory path) components))
-      (setq path parent)
-      (setq parent (ackack-parent-path path)))
-    (if path
-	(setq components (cons path components)))
-    components))
+  (let ((parent (ackack-parent-path path)))
+    (if (not (equal path parent))
+	(append (ackack-split-path parent) 
+		(list (file-name-nondirectory path)))
+      (if path (list path)))))
 
 ;; # of components in a path
 (defun ackack-path-size ( path )
   (length (ackack-split-path path)))
 
-;; find an ecb-source-path which is a prefix of the given path
-(defun ackack-ecb-source-path-for ( path )
+;; return the path if it's an ecb source path, otherwise nil
+(defun ackack-ecb-source-path-p ( path )
   (if (boundp 'ecb-source-path)
       (labels ((sptest (item sp) (equal item (directory-file-name (file-truename (first sp))))))
-	(let ((source-path nil))
-	  (while (and (not source-path) 
-		      (> (ackack-path-size path) 1))
-	    (setq source-path (find path ecb-source-path :test #'sptest))
-	    (unless source-path (setq path (ackack-parent-path path))))
+	(let ((source-path (find path ecb-source-path :test #'sptest)))
 	  (if source-path (first source-path))))))
+
+;; return true if a path is a root
+(defun ackack-root-p ( path )
+  (let ((parent (ackack-parent-path path)))
+    (equal parent path)))
+
+;; find an ecb-source-path which is a prefix of the given path
+(defun ackack-ecb-source-path-for ( path )
+  (let ((source-path (ackack-ecb-source-path-p path)))
+    (if source-path
+	source-path
+      (if (not (ackack-root-p path))
+	  (ackack-ecb-source-path-for (ackack-parent-path path))))))
 
 ;; return first n elements of list l
 (defun ackack-first-n ( l n )
