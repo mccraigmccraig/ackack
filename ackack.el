@@ -56,12 +56,12 @@
     ""))
 
 ;; either
-;; - ecb source path plus level or fewer components towards default dir
+;; - nearest prefixing ecb source path plus level or fewer components towards path
 ;; or
-;; - default dir
+;; - path
 (defun ackack-ack-dir ( path level )
   (let* ((ecb-dir (ackack-ecb-source-path-for path))
-	 (dir (if ecb-dir ecb-dir path))
+	 (dir (if (not (ackack-root-p ecb-dir)) ecb-dir path))
 	 (dir-components (ackack-split-path dir))
 	 (dir-size (length dir-components))
 	 (path-components (ackack-split-path path))
