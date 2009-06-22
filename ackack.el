@@ -117,14 +117,18 @@
     (ackack-ecb-compat buffer-name)
     
     (lexical-let ((cmdname cmd-name)
-		  (ackack-results (get-buffer-create buffer-name)))
+		  (ackack-results (get-buffer-create buffer-name))
+		  (startwin (selected-window)))
       (labels ((ackack-scroll-to-end-of-results (proc state)
 						(save-excursion
 						  (let ((curwin (selected-window)))
 						    (select-window (display-buffer ackack-results) t)
-						    (goto-char (point-max))
-						    (insert (format "\n%s finished" cmdname))
-						    (select-window curwin)))))
+						    (let ((resultswin (selected-window)))
+						      (goto-char (point-max))
+						      (insert (format "\n%s finished" cmdname))
+						      (if (eql curwin resultswin)
+							  (select-window startwin)
+							(select-window curwin)))))))
 	(save-excursion
 	  (set-buffer ackack-results)
 	  (erase-buffer)
