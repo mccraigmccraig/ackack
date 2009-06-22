@@ -75,9 +75,9 @@
 (setq ackack-linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):"))
 
 ;; run ack n levels down from the ecb source path or in default dir
-(defun ackn(pattern n)
+(defun ackn (pattern n)
   (let ((dir (ackack-ack-dir default-directory n)))
-    (ackack-invoke "ackack" "*ackack*" ackack-linkify-regexps ackack-ack "--nofilter" pattern dir)))
+    (ackack-invoke "ackack" ackack-linkify-regexps ackack-ack "--nofilter" pattern dir)))
 
 ;; run ack in the ecb-source-path or in default dir
 (defun ack (pattern)
@@ -94,30 +94,49 @@
   (interactive "sack2: ")
   (ackn pattern 2))
 
-(defun ackack-invoke (cmd-name buffer-name linkify-relist cmd &rest args)
-  (ackack-ecb-compat buffer-name)
-  
-  (lexical-let ((cmdname cmd-name)
-		(ackack-results (get-buffer-create buffer-name)))
-    (labels ((ackack-scroll-to-end-of-results (proc state)
-					      (save-excursion
-						(let ((curwin (selected-window)))
-						  (select-window (display-buffer ackack-results) t)
-						  (goto-char (point-max))
-						  (insert (format "\n%s finished" cmdname))
-						  (select-window curwin)))))
-      (save-excursion
-	(set-buffer ackack-results)
-	(erase-buffer)
-	(buffer-disable-undo)
-	(insert (format "%s %S\n\n" cmd args))
-	(setq linkify-regexps linkify-relist))
-      
-      (setq proc (apply #'start-process cmd-name ackack-results cmd args))
-      (set-process-filter proc 'linkify-filter)
-      (set-process-sentinel proc #'ackack-scroll-to-end-of-results)
-      
-      (select-window (display-buffer ackack-results))
-      (goto-char (point-max)))))
+(setq mdfind-linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):"))
+(defun mdfn (search n)
+  (let ((dir (ackack-ack-dir default-directory n)))
+    (ackack-invoke "mdfind" mdfind-linkify-regexps "mdfind" "-onlyin" dir (format "kMDItemFSName == '%s'" search))))
+
+(defun mdf (search)
+  (interactive "smdf: ")
+  (mdfn search 0))
+
+(defun mdf1 (search)
+  (interactive "smdf1: ")
+  (mdfn search 1))
+
+(defun mdf2 (search)
+  (interactive "smdf2: ")
+  (mdfn search 2))
+
+
+(defun ackack-invoke (cmd-name linkify-relist cmd &rest args)
+  (let ((buffer-name (format "*%s*" cmd-name)))
+    (ackack-ecb-compat buffer-name)
+    
+    (lexical-let ((cmdname cmd-name)
+		  (ackack-results (get-buffer-create buffer-name)))
+      (labels ((ackack-scroll-to-end-of-results (proc state)
+						(save-excursion
+						  (let ((curwin (selected-window)))
+						    (select-window (display-buffer ackack-results) t)
+						    (goto-char (point-max))
+						    (insert (format "\n%s finished" cmdname))
+						    (select-window curwin)))))
+	(save-excursion
+	  (set-buffer ackack-results)
+	  (erase-buffer)
+	  (buffer-disable-undo)
+	  (insert (format "%s %S\n\n" cmd args))
+	  (setq linkify-regexps linkify-relist))
+	
+	(setq proc (apply #'start-process cmd-name ackack-results cmd args))
+	(set-process-filter proc 'linkify-filter)
+	(set-process-sentinel proc #'ackack-scroll-to-end-of-results)
+	
+	(select-window (display-buffer ackack-results))
+	(goto-char (point-max))))))
  
 (provide 'ackack)
