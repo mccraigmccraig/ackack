@@ -1,7 +1,7 @@
 ;; mark the output buffer as an ecb compilation buffer
-(defun ackack-ecb-compat ()
+(defun ackack-ecb-compat ( bufname )
   (if (boundp 'ecb-compilation-buffer-names)
-      (add-to-list 'ecb-compilation-buffer-names '("*ackack*"))))
+      (add-to-list 'ecb-compilation-buffer-names '( bufname ))))
 
 ;; return the parent dir of a path
 (defun ackack-parent-path ( path )
@@ -70,52 +70,54 @@
 	 (select-components (ackack-first-n path-components select-size)))
     (ackack-make-path select-components)))
     
+(load (concat (file-name-directory load-file-name) "linkify"))
+(setq ackack-ack (concat (file-name-directory load-file-name) "ack"))
+(setq ackack-linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):"))
+
+;; run ack n levels down from the ecb source path or in default dir
+(defun ackn(pattern n)
+  (let ((dir (ackack-ack-dir default-directory n)))
+    (ackack-invoke "ackack" "*ackack*" ackack-linkify-regexps ackack-ack "--nofilter" pattern dir)))
+
 ;; run ack in the ecb-source-path or in default dir
 (defun ack (pattern)
   (interactive "sack: ")
-  (let ((dir (ackack-ack-dir default-directory 0)))
-    (ackack pattern dir)))
+  (ackn pattern 0))
 
 ;; run ack one level down from ecb source path or in default dir
 (defun ack1 (pattern)
   (interactive "sack1: ")
-  (let ((dir (ackack-ack-dir default-directory 1)))
-    (ackack pattern dir)))
+  (ackn pattern 1))
 
 ;; run ack two levels down from ecb source path or in default dir
 (defun ack2 (pattern)
   (interactive "sack2: ")
-  (let ((dir (ackack-ack-dir default-directory 2)))
-    (ackack pattern dir)))
+  (ackn pattern 2))
 
-(load (concat (file-name-directory load-file-name) "linkify"))
-(setq ackack-ack (concat (file-name-directory load-file-name) "ack"))
-
-;; run ack with pattern and paths, put results in *ackack* buffer
-;; scroll to bottom of results
-(defun ackack (pattern &rest paths)
-  (ackack-ecb-compat)
-  (setq ackack-results (get-buffer-create "*ackack*"))
+(defun ackack-invoke (cmd-name buffer-name linkify-relist cmd &rest args)
+  (ackack-ecb-compat buffer-name)
   
-  (let ((ackack-scroll-to-end-of-results (lambda (proc state)
-					   (save-excursion
-					     (let ((curwin (selected-window)))
-					       (select-window (display-buffer ackack-results) t)
-					       (goto-char (point-max))
-					       (insert "\nackack finished")
-					       (select-window curwin))))))
-    (save-excursion
-      (set-buffer ackack-results)
-      (erase-buffer)
-      (buffer-disable-undo)
-      (insert (format "%s %s %S\n\n" ackack-ack pattern paths))
-      (setq linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):")))
-    
-    (setq proc (apply #'start-process "ackack" ackack-results ackack-ack "--nofilter" pattern paths))
-    (set-process-filter proc 'linkify-filter)
-    (set-process-sentinel proc ackack-scroll-to-end-of-results)
-    
-    (select-window (display-buffer ackack-results))
-    (goto-char (point-max))))
-  
+  (lexical-let ((cmdname cmd-name)
+		(ackack-results (get-buffer-create buffer-name)))
+    (labels ((ackack-scroll-to-end-of-results (proc state)
+					      (save-excursion
+						(let ((curwin (selected-window)))
+						  (select-window (display-buffer ackack-results) t)
+						  (goto-char (point-max))
+						  (insert (format "\n%s finished" cmdname))
+						  (select-window curwin)))))
+      (save-excursion
+	(set-buffer ackack-results)
+	(erase-buffer)
+	(buffer-disable-undo)
+	(insert (format "%s %S\n\n" cmd args))
+	(setq linkify-regexps linkify-relist))
+      
+      (setq proc (apply #'start-process cmd-name ackack-results cmd args))
+      (set-process-filter proc 'linkify-filter)
+      (set-process-sentinel proc #'ackack-scroll-to-end-of-results)
+      
+      (select-window (display-buffer ackack-results))
+      (goto-char (point-max)))))
+ 
 (provide 'ackack)
