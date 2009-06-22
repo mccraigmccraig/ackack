@@ -94,7 +94,7 @@
   (interactive "sack2: ")
   (ackn pattern 2))
 
-(setq mdfind-linkify-regexps '("^\\([^:]+\\):\\([0-9]+\\):"))
+(setq mdfind-linkify-regexps '("^\\(.*\\)\\(\\)$"))
 (defun mdfn (search n)
   (let ((dir (ackack-ack-dir default-directory n)))
     (ackack-invoke "mdfind" mdfind-linkify-regexps "mdfind" "-onlyin" dir (format "kMDItemFSName == '%s'" search))))
